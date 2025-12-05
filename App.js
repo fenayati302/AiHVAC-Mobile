@@ -1,3 +1,4 @@
+import { createDrawerNavigator } from "@react-navigation/drawer";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { ActivityIndicator, Text, View } from "react-native";
@@ -5,13 +6,19 @@ import "react-native-gesture-handler";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 
 // Import Screens
+import CustomDrawer from "./components/CustomDrawer";
+import CustomerDashboardScreen from "./screens/CustomerDashboardScreen";
 import DeviceListScreen from "./screens/DeviceListScreen";
 import LoginScreen from "./screens/LoginScreen";
 import MonitoringScreen from "./screens/MonitoringScreen";
+import NotificationsScreen from "./screens/NotificationsScreen";
+import ProfileScreen from "./screens/ProfileScreen";
+import ReportsScreen from "./screens/ReportsScreen";
 import ScanDeviceScreen from "./screens/ScanDeviceScreen";
 import SetupWizardScreen from "./screens/SetupWizardScreen";
 
 const Stack = createNativeStackNavigator();
+const Drawer = createDrawerNavigator();
 
 function LoadingScreen() {
   return (
@@ -29,8 +36,52 @@ function LoadingScreen() {
   );
 }
 
+function CustomerDrawerNavigator() {
+  return (
+    <Drawer.Navigator
+      drawerContent={(props) => <CustomDrawer {...props} />}
+      screenOptions={{
+        headerShown: false,
+        drawerStyle: {
+          width: 280,
+        },
+      }}
+    >
+      <Drawer.Screen
+        name="CustomerDashboard"
+        component={CustomerDashboardScreen}
+      />
+      <Drawer.Screen name="Profile" component={ProfileScreen} />
+      <Drawer.Screen name="Notifications" component={NotificationsScreen} />
+      <Drawer.Screen name="Reports" component={ReportsScreen} />
+    </Drawer.Navigator>
+  );
+}
+
+function TechnicianDrawerNavigator() {
+  return (
+    <Drawer.Navigator
+      drawerContent={(props) => <CustomDrawer {...props} />}
+      screenOptions={{
+        headerShown: false,
+        drawerStyle: {
+          width: 280,
+        },
+      }}
+    >
+      <Drawer.Screen name="DeviceList" component={DeviceListScreen} />
+      <Drawer.Screen name="Profile" component={ProfileScreen} />
+      <Drawer.Screen name="Notifications" component={NotificationsScreen} />
+      <Drawer.Screen name="Reports" component={ReportsScreen} />
+      <Drawer.Screen name="Monitoring" component={MonitoringScreen} />
+      <Drawer.Screen name="SetupWizard" component={SetupWizardScreen} />
+      <Drawer.Screen name="ScanDevice" component={ScanDeviceScreen} />
+    </Drawer.Navigator>
+  );
+}
+
 function AppNavigator() {
-  const { isAuthenticated, loading } = useAuth();
+  const { isAuthenticated, loading, user } = useAuth();
 
   if (loading) {
     return <LoadingScreen />;
@@ -39,13 +90,7 @@ function AppNavigator() {
   return (
     <Stack.Navigator
       screenOptions={{
-        headerStyle: {
-          backgroundColor: "#1e293b",
-        },
-        headerTintColor: "#fff",
-        headerTitleStyle: {
-          fontWeight: "bold",
-        },
+        headerShown: false,
       }}
     >
       {!isAuthenticated ? (
@@ -54,38 +99,20 @@ function AppNavigator() {
           component={LoginScreen}
           options={{ headerShown: false }}
         />
+      ) : user.role === "customer" ? (
+        // Customer gets drawer navigation with limited features
+        <Stack.Screen
+          name="CustomerDrawer"
+          component={CustomerDrawerNavigator}
+          options={{ headerShown: false }}
+        />
       ) : (
-        <>
-          <Stack.Screen
-            name="DeviceList"
-            component={DeviceListScreen}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name="Monitoring"
-            component={MonitoringScreen}
-            options={{
-              title: "Device Monitoring",
-              headerBackTitle: "Back",
-            }}
-          />
-          <Stack.Screen
-            name="SetupWizard"
-            component={SetupWizardScreen}
-            options={{
-              title: "Device Setup",
-              headerBackTitle: "Cancel",
-            }}
-          />
-          <Stack.Screen
-            name="ScanDevice"
-            component={ScanDeviceScreen}
-            options={{
-              title: "Scan Device",
-              headerBackTitle: "Back",
-            }}
-          />
-        </>
+        // Technician/Admin/Manager get full drawer navigation
+        <Stack.Screen
+          name="TechnicianDrawer"
+          component={TechnicianDrawerNavigator}
+          options={{ headerShown: false }}
+        />
       )}
     </Stack.Navigator>
   );

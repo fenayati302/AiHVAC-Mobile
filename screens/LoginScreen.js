@@ -63,7 +63,7 @@ export default function LoginScreen({ navigation }) {
             placeholderTextColor="#64748b"
             value={companyId}
             onChangeText={setCompanyId}
-            autoCapitalize="characters"
+            autoCapitalize="none"
             editable={!loading}
           />
 
