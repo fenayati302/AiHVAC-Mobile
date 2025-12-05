@@ -28,16 +28,28 @@ export default function DeviceListScreen({ navigation }) {
   }, []);
 
   const loadDevices = async () => {
-    try {
-      const data = await deviceAPI.getFleetDevices(user.companyId);
-      setDevices(data);
-    } catch (error) {
-      console.error('Error loading devices:', error);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
+  try {
+    let data;
+    
+    // If admin, fetch ALL devices from all companies
+    if (user.role === 'admin') {
+      // Fetch devices from multiple companies
+      const hvacA = await deviceAPI.getFleetDevices('HVAC_A');
+      const hvacB = await deviceAPI.getFleetDevices('HVAC_B');
+      data = [...hvacA, ...hvacB];
+    } else {
+      // Regular users see only their company's devices
+      data = await deviceAPI.getFleetDevices(user.companyId);
     }
-  };
+    
+    setDevices(data);
+  } catch (error) {
+    console.error('Error loading devices:', error);
+  } finally {
+    setLoading(false);
+    setRefreshing(false);
+  }
+};
 
   const onRefresh = () => {
     setRefreshing(true);
